@@ -51,7 +51,7 @@ class LanZouCloud(object):
         self._mydisk_url = 'https://pc.woozooo.com/mydisk.php'
         self._cookies = None
         self._headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
+            'User-Agent': self._fake_ua(),
             'Referer': 'https://pc.woozooo.com/mydisk.php',
             'Accept-Language': 'zh-CN,zh;q=0.9',  # 提取直连必需设置这个，否则拿不到数据
         }
@@ -88,7 +88,19 @@ class LanZouCloud(object):
             'lanzoux.com'  # 鲁ICP备15001327号-5, 2020-06-09
         ]
         return [url.replace('lanzouo.com', d) for d in available_domains]
-
+    
+    def _fake_ua(self):
+        """获取随机的UA"""
+        UA = [
+            'Mozilla/5.0 (compatible; MSIE 9.0; Windows 98; Trident/3.1)',
+            'Mozilla/5.0 (Windows; U; Windows NT 4.0) AppleWebKit/534.33.4 (KHTML, like Gecko) Version/5.0.2 Safari/534.33.4',
+            'Mozilla/5.0 (Windows; U; Windows NT 5.2) AppleWebKit/535.35.2 (KHTML, like Gecko) Version/5.0.4 Safari/535.35.2',
+            'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 4.0; Trident/4.1)',
+            'Mozilla/5.0 (Windows NT 4.0; ts-ZA; rv:1.9.1.20) Gecko/2011-02-10 21:48:39 Firefox/12.0'
+        ]
+        return shuffle(UA)[0]
+    
+    
     def ignore_limits(self):
         """解除官方限制"""
         logger.warning("*** You have enabled the big file upload and filename disguise features ***")
@@ -549,7 +561,7 @@ class LanZouCloud(object):
             try:
                 file_token = re.findall("'file':'(.+?)'", download_page_html)[0]
                 file_sign = re.findall("'sign':'(.+?)'", download_page_html)[0]
-                check_api = 'https://vip.d0.baidupan.com/file/ajax.php'
+                check_api = 'https://developer-oss.lanzouc.com/file/ajax.php'
                 post_data = {'file': file_token, 'el': 2, 'sign': file_sign}
                 sleep(2)  # 这里必需等待2s, 否则直链返回 ?SignError
                 resp = self._post(check_api, post_data)
